@@ -1,8 +1,44 @@
+import time
+import telegram
+import logging
 import ConfigParser
-from utils.getMe import GetBotDetails
-from utils.getUpdates import MessageCounter
-from utils.sendMessage import MessageSender
+from utils.replyhandler import Cleverbot, CleverbotAPIError
+from utils.profanity_check import ProfanityFilter
+from telegram.chat import Chat
+from telegram.ext import Updater
+from telegram.ext import CommandHandler
+from telegram.ext import MessageHandler, Filters
 
+####################### INIT VARIABLES GO HERE  ##################################
+cb = Cleverbot()
+name = 'Guest'
+logger = logging.getLogger()
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger.setLevel(logging.INFO)
+####################### END INIT VARIABLES ########################################
+
+# Handle the initial start command.
+def start(bot, update):
+    username = str(update.message.from_user.first_name)
+    bot.sendMessage(chat_id=update.message.chat_id, text="Hi, %s. I'm Smartypants. Talk to me." %(username))
+
+
+# Handle replies.
+def reply(bot, update):
+    global cb
+    profobj = ProfanityFilter()
+    cleanmsg = profobj.check_message(update.message.text)
+    if cleanmsg:
+        logging.info("User %s just sweared!" %(update.message.from_user.first_name))
+        bot.sendChatAction(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        time.sleep(1)
+        bot.sendMessage(chat_id=update.message.chat_id, text=cleanmsg)
+    else:
+        logging.info("User %s just sent a message!" %(update.message.from_user.first_name))
+        bot.sendChatAction(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        time.sleep(1)
+        bot.sendMessage(chat_id=update.message.chat_id, text=cb.ask(update.message.text))
 
 def parse_secret_token():
     config = ConfigParser.RawConfigParser()
@@ -20,14 +56,20 @@ def parse_secret_token():
 
 
 def main():
-    token = parse_secret_token()
+    try:
+        updater = Updater(parse_secret_token())
+        dispatcher = updater.dispatcher
 
-    bot = GetBotDetails()
-    if bot.get_server_response(token) :
-        print "Bot Name \t: %s" % bot.name
-        print "Bot username \t: %s" % bot.username
-        print "Bot id \t\t: %s" %bot.id
-
+        start_handler = CommandHandler('start', start)
+        dispatcher.add_handler(start_handler)
+        echo_handler = MessageHandler(Filters.text, reply)
+        dispatcher.add_handler(echo_handler)
+        updater.start_polling()
+        updater.idle()
+    except KeyboardInterrupt:
+        updater.stop()
+        return False
+'''
     msg_obj = MessageCounter()
     msg_count = msg_obj.get_messages(token)
     send_list = list()
@@ -44,15 +86,15 @@ def main():
 
         elif lastmessage == '/dota' and msg_obj.updatemap[user]:
             send_list.append(user)
-            messagetext = "Too Easy for Provin"
+            messagetext = "Too Easy fo;r Provin"
 
     send_list = set(send_list)
     for user in send_list:
         print msg_obj.idmap[user]
         send_obj = MessageSender(msg_obj.idmap[user])
         send_obj.SendMessage(token, messagetext)
+        '''
 
 if __name__ == '__main__':
     print "[*] Running Server.."
-    while True:
-        main()
+    main()
