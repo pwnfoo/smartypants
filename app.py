@@ -1,4 +1,5 @@
 import time
+import json
 import telegram
 import logging
 import ConfigParser
@@ -12,6 +13,7 @@ from telegram.ext import MessageHandler, Filters
 ####################### INIT VARIABLES GO HERE  ##################################
 cb = Cleverbot()
 name = 'Guest'
+database = dict()
 logger = logging.getLogger()
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -29,15 +31,14 @@ def reply(bot, update):
     global cb
     profobj = ProfanityFilter()
     cleanmsg = profobj.check_message(update.message.text)
+
     if cleanmsg:
         logging.info("User %s just sweared!" %(update.message.from_user.first_name))
         bot.sendChatAction(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        time.sleep(1)
         bot.sendMessage(chat_id=update.message.chat_id, text=cleanmsg)
     else:
-        logging.info("User %s just sent a message!" %(update.message.from_user.first_name))
+        logging.info("%s : %s" %(update.message.from_user.first_name, update.message.text))
         bot.sendChatAction(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        time.sleep(1)
         bot.sendMessage(chat_id=update.message.chat_id, text=cb.ask(update.message.text))
 
 def parse_secret_token():
@@ -93,7 +94,7 @@ def main():
         print msg_obj.idmap[user]
         send_obj = MessageSender(msg_obj.idmap[user])
         send_obj.SendMessage(token, messagetext)
-        '''
+'''
 
 if __name__ == '__main__':
     print "[*] Running Server.."

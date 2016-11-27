@@ -1,4 +1,4 @@
-from profanity import profanity
+from profane import contains_profanity
 import random
 
 class ProfanityFilter:
@@ -11,7 +11,7 @@ class ProfanityFilter:
                             ]
 
     def check_message(self, message):
-        if profanity.contains_profanity(message):
+        if contains_profanity(message):
             return random.choice(self.messages)
         else:
             return False
