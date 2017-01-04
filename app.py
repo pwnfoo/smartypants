@@ -2,6 +2,7 @@ import time
 import json
 import telegram
 import logging
+import wikipedia
 import ConfigParser
 from utils.replyhandler import Cleverbot, CleverbotAPIError
 from utils.profanity_check import ProfanityFilter
@@ -24,6 +25,21 @@ logger.setLevel(logging.INFO)
 def start(bot, update):
     username = str(update.message.from_user.first_name)
     bot.sendMessage(chat_id=update.message.chat_id, text="Hi, %s. I'm Smartypants. Talk to me." %(username))
+
+def wikipee(bot, update):
+     try:
+     	searchtext = update.message.text[5:]
+     	bot.sendMessage(chat_id=update.message.chat_id, text="Let me look that up. It might take a while")
+     	page = wikipedia.search(searchtext)[0]
+     	summary = wikipedia.summary(page, sentences=3)
+     	pagelink = wikipedia.page(page).url
+     	bot.sendChatAction(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+     	bot.sendMessage(chat_id=update.message.chat_id, text=summary)
+     	bot.sendMessage(chat_id=update.message.chat_id, text="You can read more about it here: "+pagelink)
+     except Exception as e:
+	logging.info(e)
+	bot.sendChatAction(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+	bot.sendMessage(chat_id=update.message.chat_id, text="Uh-oh. Look up failed. Please be more specific or try again!")
 
 
 # Handle replies.
@@ -63,6 +79,8 @@ def main():
 
         start_handler = CommandHandler('start', start)
         dispatcher.add_handler(start_handler)
+	wiki_handler = CommandHandler('wiki',wikipee)
+	dispatcher.add_handler(wiki_handler)
         echo_handler = MessageHandler(Filters.text, reply)
         dispatcher.add_handler(echo_handler)
         updater.start_polling()

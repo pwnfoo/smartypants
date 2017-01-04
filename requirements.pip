@@ -1,1 +1,3 @@
 python_telegram_bot==5.2.0
+wikipedia==1.4.0
+
