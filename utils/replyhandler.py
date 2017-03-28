@@ -1,3 +1,4 @@
+"""An unofficial library to access the Cleverbot API."""
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 from builtins import str  # pylint: disable=redefined-builtin
@@ -9,15 +10,24 @@ import requests
 from requests.compat import urlencode
 from future.backports.html import parser
 
-
+# Only use the instance method `unescape` of entity_parser. (I wish it was a
+# static method or public function; it never uses `self` anyway)
 entity_parser = parser.HTMLParser()
 
 
 class Cleverbot(object):
+    """Handles a conversation with Cleverbot.
 
-    HOST = "www.cleverbot.com"
+    Example usage:
+
+       >>> from cleverbot import Cleverbot
+       >>> cb = Cleverbot()
+       >>> cb.ask("Hi. How are you?")
+       "I'm good, thanks. How are you?"
+    """
+    HOST = "www.boibot.com"
     PROTOCOL = "http://"
-    RESOURCE = "/webservicemin?uc=321&"
+    RESOURCE = "/webservicemin?uc=UseOfficialAPI&t=7295&re=yes&"
     API_URL = PROTOCOL + HOST + RESOURCE
 
     headers = {
@@ -74,6 +84,13 @@ class Cleverbot(object):
         self.session.get(Cleverbot.PROTOCOL + Cleverbot.HOST)
 
     def ask(self, question):
+        """Asks Cleverbot a question.
+
+        Maintains message history.
+
+        :param question: The question to ask
+        :return Cleverbot's answer
+        """
 
         # Set the current question
         self.data['stimulus'] = question
@@ -96,7 +113,17 @@ class Cleverbot(object):
         return parsed['answer'].encode('latin-1').decode('utf-8')
 
     def _send(self):
-    
+        """POST the user's question and all required information to the
+        Cleverbot API
+
+        Cleverbot tries to prevent unauthorized access to its API by
+        obfuscating how it generates the 'icognocheck' token. The token is
+        currently the md5 checksum of the 10th through 36th characters of the
+        encoded data. This may change in the future.
+
+        TODO: Order is not guaranteed when urlencoding dicts. This hasn't been
+        a problem yet, but let's look into ordered dicts or tuples instead.
+        """
         # Set data as appropriate
         if self.conversation:
             linecount = 1
@@ -142,3 +169,4 @@ class Cleverbot(object):
 
 class CleverbotAPIError(Exception):
     """Cleverbot returned an error (it probably recognized us as a bot)"""
+

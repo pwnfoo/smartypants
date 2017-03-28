@@ -1,4 +1,5 @@
 import time
+import random
 import json
 import telegram
 import logging
@@ -44,15 +45,7 @@ def wikipee(bot, update):
 
 # Handle replies.
 def reply(bot, update):
-    global cb
-    profobj = ProfanityFilter()
-    cleanmsg = profobj.check_message(update.message.text)
-
-    if cleanmsg:
-        logging.info("User %s just sweared!" %(update.message.from_user.first_name))
-        bot.sendChatAction(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        bot.sendMessage(chat_id=update.message.chat_id, text=cleanmsg)
-    else:
+    	global cb
         logging.info("%s : %s" %(update.message.from_user.first_name, update.message.text))
         bot.sendChatAction(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         bot.sendMessage(chat_id=update.message.chat_id, text=cb.ask(update.message.text))
@@ -103,9 +96,6 @@ def main():
         if lastmessage == '/stats' and msg_obj.updatemap[user]:
             send_list.append(user)
 
-        elif lastmessage == '/dota' and msg_obj.updatemap[user]:
-            send_list.append(user)
-            messagetext = "Too Easy fo;r Provin"
 
     send_list = set(send_list)
     for user in send_list:
