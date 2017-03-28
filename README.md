@@ -11,3 +11,7 @@ Telegram bot that uses Cleverbot wrappers to reply intelligently.
 ## Bugs?
 
 Feel free to send in a Pull Request if you manage to fix a bug or open an issue [here](https://github.com/sachinkamath/smartypants/issues/new)
+
+
+
+> Cleverbot has an official API now and this is deprecated. The move to official API will be made soon.
