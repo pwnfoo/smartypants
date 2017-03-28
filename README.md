@@ -1,4 +1,4 @@
-# telegram-emotionbot
+# Smartypants
 Telegram bot that uses Cleverbot wrappers to reply intelligently. 
 
 
